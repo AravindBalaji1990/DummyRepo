@@ -7,7 +7,9 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
         features = "src/test/resources",
-        glue = {"stepdefinition_swaglab","HooksInitialisation"},
-        dryRun = false)
+        glue = {"stepdefinition_swaglab", "HooksInitialisation"},
+        dryRun = false,
+        monochrome = true,
+        plugin = {"pretty","html:HTMLReport.html","json:JSONReport.json"})
 public class Runner {
 }
