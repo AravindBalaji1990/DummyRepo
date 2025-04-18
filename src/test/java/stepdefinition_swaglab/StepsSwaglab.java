@@ -4,15 +4,16 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.remote.AutomationName;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.AfterStep;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.junit.After;
 import org.junit.Assert;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
@@ -21,6 +22,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 
 public class StepsSwaglab {
@@ -32,6 +35,31 @@ public class StepsSwaglab {
         System.out.println("before");
         this.scenario = scenario;
     }
+
+    @After
+    public void driverquit() {
+        driver.quit();
+    }
+
+    @AfterStep
+    public void takescreeshot(Scenario scenario) {
+        scenario.log("---------ending my case---------");
+//        if (scenario.getStatus().toString().equals("PASSED")) {
+//        if (scenario.isFailed()) {
+        try {
+            scenario.log("test log : " + scenario.getStatus());
+            // byte[] screenshot = getScreenshotAs(OutputType.BYTES);
+            // screnshot is takens as bytes -> file -> mention the format -> store it in cucumber report
+            byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+            scenario.attach(screenshot, "image/png", scenario.getName());
+        } catch (WebDriverException somePlatformsDontSupportScreenshots) {
+            System.err.println(somePlatformsDontSupportScreenshots.getMessage());
+        }
+
+//        }
+//        }
+    }
+
     @Given("User open Android device")
     public void user_open_android_device() throws MalformedURLException, InterruptedException {
         UiAutomator2Options options = new UiAutomator2Options();
@@ -48,16 +76,16 @@ public class StepsSwaglab {
         scenario.log("this is the first step");
     }
 
-    @When("User enter the user name")
-    public void user_enter_the_user_name() {
-        driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Username\"]")).sendKeys("standard_user");
+    @When("User enter the user name {}")
+    public void user_enter_the_user_name(String username) {
+        driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Username\"]")).sendKeys(username);
         scenario.log("Entering the username");
 
     }
 
-    @When("User enter the password")
-    public void user_entet_the_password() {
-        driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Password\"]")).sendKeys("secret_sauce");
+    @When("User enter the password {}")
+    public void user_entet_the_password(String password) {
+        driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Password\"]")).sendKeys(password);
         scenario.log("Entering the password");
 
 
@@ -91,4 +119,22 @@ public class StepsSwaglab {
         Thread.sleep(3000);
         driver.quit();
     }
+
+    @When("enter the user name for different user")
+    public void enter_the_user_name_for_different_user(DataTable dataTable) {
+        List<Map<String, String>> data = dataTable.asMaps(String.class, String.class);
+        for (int i = 0; i < data.size(); i++) {
+
+            driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Username\"]")).sendKeys(data.get(i).get("user"));
+            driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Username\"]")).clear();
+        }
+
+    }
+
+    @When("enter the user name for different user at scenairo level {}")
+    public void enter_the_user_name_for_different_user_at_scenairo_level_standard_user(String datafromfeature) {
+        driver.findElement(AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Username\"]")).sendKeys(datafromfeature);
+
+    }
+
 }
